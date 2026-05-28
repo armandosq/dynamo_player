@@ -1,2 +1,535 @@
+/* =========================================================
+   Dynamo Player — modules/style.js
+   Netflix Style CSS - Dark, Seamless, Red Accents
+   ========================================================= */
 
-export const rawStyle = `.dynamo-loader,.dynamo-overlay,.dynamo-overscreen,.dynamo-poster{inset:0;position:absolute}.dynamo-loader,.dynamo-overlay,.dynamo-overscreen,.dynamo-poster.hidden{opacity:0;pointer-events:none}.hidden{display:none!important}.dynamo-wrapper{position:relative;display:inline-block;width:100%;aspect-ratio:16/9;background:#000;border-radius:8px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;user-select:none;-webkit-user-select:none}.dynamo-wrapper video{display:block;object-fit:contain;width:100%;height:100%;position:relative;z-index:1}.dynamo-poster{background-size:cover;background-position:center;background-color:#000;z-index:2;transition:opacity .4s}.dynamo-loader{display:flex;align-items:center;justify-content:center;z-index:10;transition:opacity .3s}.dynamo-loader.active{opacity:1;z-index:20}.dynamo-spinner{width:48px;height:48px;border:4px solid rgba(255,255,255,.2);border-left-color:#e53935;border-radius:50%;animation:.8s linear infinite dynamo-spin}@keyframes dynamo-spin{to{transform:rotate(360deg)}}.dynamo-overlay{display:flex;align-items:center;justify-content:center;z-index:2;transition:opacity .2s}.dynamo-overlay.visible,.dynamo-wrapper:not(.hide-controls) .dynamo-overscreen{opacity:1;pointer-events:auto}.dynamo-big-play{width:72px;height:72px;display:flex;align-items:center;justify-content:center;border-radius:50%;cursor:pointer;background:rgba(0,0,0,.55);color:#fff;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:2px solid rgba(255,255,255,.2)}.dynamo-big-play svg{width:36px;height:36px;margin-left:4px}.dynamo-overscreen{display:flex;align-items:center;justify-content:center;gap:40px;background:rgba(0,0,0,.2);z-index:4;transition:opacity .3s}.dynamo-btn-os{width:60px;height:60px;display:flex;align-items:center;justify-content:center;border-radius:50%;cursor:pointer;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.2);color:#fff;backdrop-filter:blur(4px);transition:transform .2s}.dynamo-btn-os:hover{transform:scale(1.1);background:rgba(0,0,0,.6)}.dynamo-btn-os svg{width:30px;height:30px}.dynamo-btn-os.play-pause-os{width:80px;height:80px}.dynamo-btn-os.play-pause-os svg{width:40px;height:40px}.dynamo-controls{position:absolute;bottom:0;left:0;right:0;display:flex;flex-direction:column;gap:6px;padding:8px 12px 10px;background:linear-gradient(transparent,rgba(0,0,0,.72) 40%);border-bottom-left-radius:8px;border-bottom-right-radius:8px;opacity:1;transform:translateY(0);pointer-events:auto;z-index:5;transition:opacity .25s,transform .25s}.dynamo-wrapper.hide-controls .dynamo-controls{opacity:0;transform:translateY(6px);pointer-events:none}.dynamo-progress-wrap{position:relative;display:flex;align-items:center;width:100%;height:14px;cursor:pointer}.dynamo-progress-track{position:relative;width:100%;height:3px;overflow:hidden;background:rgba(255,255,255,.22);border-radius:3px;transition:height .15s}.dynamo-progress-wrap:hover .dynamo-progress-track{height:5px}.dynamo-progress-buffer{position:absolute;top:0;left:0;height:100%;width:0;background:rgba(255,255,255,.3);z-index:1;transition:width .3s}.dynamo-progress-fill{position:absolute;top:0;left:0;height:100%;background:#e53935;border-radius:3px;z-index:2;pointer-events:none}.dynamo-progress-thumb{position:absolute;top:50%;transform:translate(-50%,-50%) scale(0);width:13px;height:13px;background:#fff;border-radius:50%;z-index:3;pointer-events:none;box-shadow:0 0 4px rgba(0,0,0,.4);transition:transform .15s}.dynamo-progress-wrap:hover .dynamo-progress-thumb{transform:translate(-50%,-50%) scale(1)}.dynamo-progress-preview-container{position:absolute;bottom:16px;left:0;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;opacity:0;pointer-events:none;z-index:10;transition:opacity .2s}.dynamo-progress-wrap:hover .dynamo-progress-preview-container{opacity:1}.dynamo-progress-thumb-box{width:160px;height:90px;display:flex;align-items:center;justify-content:center;background:#000;border:2px solid rgba(255,255,255,.8);border-radius:4px;overflow:hidden;margin-bottom:6px;box-shadow:0 4px 15px rgba(0,0,0,.5)}.dynamo-progress-thumb-box canvas{width:100%;height:100%;object-fit:cover}.dynamo-progress-tooltip{display:block;text-align:center;white-space:nowrap;padding:4px 8px;border-radius:4px;font-size:12px;font-weight:500;color:#fff;background:rgba(28,28,28,.9);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);box-shadow:0 2px 6px rgba(0,0,0,.3)}.dynamo-bottom{display:flex;align-items:center;gap:4px}.dynamo-btn{display:flex;align-items:center;justify-content:center;padding:5px;border:none;border-radius:4px;background:0 0;color:#fff;cursor:pointer;opacity:.9;flex-shrink:0;transition:opacity .15s}.dynamo-ambient-canvas,.dynamo-menu-context{position:absolute;opacity:0;pointer-events:none}.dynamo-btn:hover{opacity:1;background:rgba(255,255,255,.1)}.dynamo-btn svg{width:20px;height:20px}.dynamo-volume-group{display:flex;align-items:center;gap:2px}.dynamo-volume-slider{display:flex;align-items:center;overflow:hidden;width:0;transition:width .2s}.dynamo-volume-group:hover .dynamo-volume-slider,.dynamo-volume-slider:focus-within{width:62px}.dynamo-volume-slider input[type=range]{width:58px;height:3px;appearance:none;-webkit-appearance:none;background:rgba(255,255,255,.25);border-radius:3px;outline:0;cursor:pointer;accent-color:#e53935}.dynamo-volume-slider input[type=range]::-webkit-slider-thumb{width:11px;height:11px;border-radius:50%;background:#fff;cursor:pointer;-webkit-appearance:none}.dynamo-spacer{flex:1}.dynamo-time{padding:0 4px;font-size:12px;white-space:nowrap;color:rgba(255,255,255,.88)}.dynamo-ripple{position:absolute;transform:scale(0);border-radius:50%;background:rgba(255,255,255,.2);pointer-events:none;z-index:10;animation:.5s ease-out forwards dynamo-ripple-anim}@keyframes dynamo-ripple-anim{to{transform:scale(4);opacity:0}}.dynamo-wrapper.is-playing.hide-controls,.dynamo-wrapper.is-playing.hide-controls .dynamo-btn-os,.dynamo-wrapper.is-playing.hide-controls .dynamo-overscreen,.dynamo-wrapper.is-playing.hide-controls video{cursor:none}.dynamo-menu-context{bottom:50px;right:12px;width:220px;overflow:hidden;border-radius:6px;color:#fff;font-size:13px;font-weight:500;background:rgba(28,28,28,.9);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);box-shadow:0 4px 12px rgba(0,0,0,.4);transform:translateY(10px);z-index:10;transition:opacity .2s,transform .2s}.dynamo-menu-header,.dynamo-menu-item{display:flex;cursor:pointer;transition:background .15s}.dynamo-menu-context.active{opacity:1;transform:translateY(0);pointer-events:auto}.dynamo-menu-list{list-style:none;margin:0;padding:6px 0;max-height:240px;overflow-y:auto;overflow-x:hidden}.dynamo-menu-list::-webkit-scrollbar{width:4px}.dynamo-menu-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:2px}.dynamo-menu-list::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.4)}.dynamo-menu-item{align-items:center;justify-content:space-between;padding:10px 16px}.dynamo-menu-item:hover{background:rgba(255,255,255,.15)}.dynamo-menu-item.selected{color:#e53935}.dynamo-menu-item .val{display:flex;align-items:center;gap:6px;color:#aaa}.dynamo-menu-header{align-items:center;gap:8px;padding:12px 16px;font-weight:700;border-bottom:1px solid rgba(255,255,255,.1)}.dynamo-menu-header:hover{background:rgba(255,255,255,.1)}.dynamo-wrapper video::cue{background:rgba(0,0,0,.75);color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;line-height:1.5;border-radius:4px}.dynamo-ambient-canvas{top:50%;left:50%;width:100%;height:100%;border-radius:8px;transform:translate(-50%,-50%) scale(1.1);z-index:0;filter:blur(60px) brightness(1.2) saturate(1.5);transition:opacity 1.5s}.dynamo-wrapper.ambient-active .dynamo-ambient-canvas{opacity:.4}.dynamo-pip-btn{display:none}.dynamo-loader,.dynamo-overlay,.dynamo-overscreen,.dynamo-poster,.dynamo-wrapper video{border-radius:8px}`
+export const rawStyle = `
+.dynamo-loader, .dynamo-overlay, .dynamo-overscreen, .dynamo-poster {
+  inset: 0;
+  position: absolute;
+}
+
+.dynamo-loader.hidden, .dynamo-overlay.hidden, .dynamo-overscreen.hidden, .dynamo-poster.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.dynamo-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+  border-radius: 4px; /* Netflix usa bordes muy sutiles o nulos */
+  font-family: 'Netflix Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  user-select: none;
+  -webkit-user-select: none;
+  overflow: hidden;
+}
+
+.dynamo-wrapper video {
+  display: block;
+  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  z-index: 1;
+  border-radius: 4px;
+}
+
+.dynamo-poster {
+  background-size: cover;
+  background-position: center;
+  background-color: #000;
+  z-index: 2;
+  transition: opacity 0.4s ease;
+}
+
+.dynamo-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: opacity 0.3s;
+}
+
+.dynamo-loader.active {
+  opacity: 1;
+  z-index: 20;
+}
+
+/* Spinner estilo Netflix (arco rojo) */
+.dynamo-spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #e50914; /* Netflix Red */
+  border-radius: 50%;
+  animation: 0.8s linear infinite dynamo-spin;
+}
+
+@keyframes dynamo-spin {
+  to { transform: rotate(360deg); }
+}
+
+.dynamo-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  transition: opacity 0.2s;
+}
+
+.dynamo-overlay.visible, 
+.dynamo-wrapper:not(.hide-controls) .dynamo-overscreen {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Botón central overscreen simplificado */
+.dynamo-big-play {
+  width: 76px;
+  height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.dynamo-big-play:hover {
+  transform: scale(1.1);
+  background: rgba(0, 0, 0, 0.7);
+  border-color: #e50914;
+}
+
+.dynamo-big-play svg {
+  width: 36px;
+  height: 36px;
+  margin-left: 4px;
+}
+
+.dynamo-overscreen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 60px; /* Más espaciado estilo TV */
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 4;
+  transition: opacity 0.3s;
+}
+
+.dynamo-btn-os {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  cursor: pointer;
+  background: transparent;
+  color: #fff;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.dynamo-btn-os:hover {
+  transform: scale(1.15);
+  color: #e50914;
+}
+
+.dynamo-btn-os svg {
+  width: 36px;
+  height: 36px;
+}
+
+.dynamo-btn-os.play-pause-os {
+  width: 80px;
+  height: 80px;
+}
+
+.dynamo-btn-os.play-pause-os svg {
+  width: 48px;
+  height: 48px;
+}
+
+/* Controles inferiores con gradiente oscuro suave */
+.dynamo-controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px 24px 16px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.5) 60%, transparent 100%);
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+  z-index: 5;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.dynamo-wrapper.hide-controls .dynamo-controls {
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+}
+
+/* Barra de progreso interactiva */
+.dynamo-progress-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 16px;
+  cursor: pointer;
+}
+
+.dynamo-progress-track {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  transition: height 0.15s ease;
+}
+
+.dynamo-progress-wrap:hover .dynamo-progress-track {
+  height: 6px;
+}
+
+.dynamo-progress-buffer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0;
+  background: rgba(255, 255, 255, 0.4);
+  z-index: 1;
+  transition: width 0.3s ease;
+}
+
+.dynamo-progress-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: #e50914; /* Netflix Red */
+  border-radius: 2px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.dynamo-progress-thumb {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  width: 16px;
+  height: 16px;
+  background: #e50914; /* Bolita roja estilo Netflix */
+  border-radius: 50%;
+  z-index: 3;
+  pointer-events: none;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.5);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dynamo-progress-wrap:hover .dynamo-progress-thumb {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* Tooltip y Preview */
+.dynamo-progress-preview-container {
+  position: absolute;
+  bottom: 24px;
+  left: 0;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 10;
+  transition: opacity 0.2s;
+}
+
+.dynamo-progress-wrap:hover .dynamo-progress-preview-container {
+  opacity: 1;
+}
+
+.dynamo-progress-thumb-box {
+  width: 160px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #141414;
+  border: 2px solid #fff;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+}
+
+.dynamo-progress-thumb-box canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dynamo-progress-tooltip {
+  display: block;
+  text-align: center;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
+
+/* Botonera inferior */
+.dynamo-bottom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dynamo-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  opacity: 0.85;
+  flex-shrink: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.dynamo-btn:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.dynamo-btn svg {
+  width: 28px; /* Iconos un poco más grandes */
+  height: 28px;
+}
+
+/* Control de Volumen */
+.dynamo-volume-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dynamo-volume-slider {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  width: 0;
+  opacity: 0;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+}
+
+.dynamo-volume-group:hover .dynamo-volume-slider,
+.dynamo-volume-slider:focus-within {
+  width: 70px;
+  opacity: 1;
+}
+
+.dynamo-volume-slider input[type=range] {
+  width: 65px;
+  height: 4px;
+  appearance: none;
+  -webkit-appearance: none;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  outline: 0;
+  cursor: pointer;
+  accent-color: #e50914; /* Netflix Red */
+}
+
+.dynamo-volume-slider input[type=range]::-webkit-slider-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #e50914; /* Bolita roja */
+  cursor: pointer;
+  -webkit-appearance: none;
+}
+
+.dynamo-spacer {
+  flex: 1;
+}
+
+.dynamo-time {
+  padding: 0 8px;
+  font-size: 14px;
+  font-weight: 400;
+  white-space: nowrap;
+  color: #fff;
+}
+
+/* Efecto Ripple (Opcional) */
+.dynamo-ripple {
+  position: absolute;
+  transform: scale(0);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  pointer-events: none;
+  z-index: 10;
+  animation: 0.5s ease-out forwards dynamo-ripple-anim;
+}
+
+@keyframes dynamo-ripple-anim {
+  to { transform: scale(4); opacity: 0; }
+}
+
+/* Ocultar cursor inactivo */
+.dynamo-wrapper.is-playing.hide-controls,
+.dynamo-wrapper.is-playing.hide-controls .dynamo-btn-os,
+.dynamo-wrapper.is-playing.hide-controls .dynamo-overscreen,
+.dynamo-wrapper.is-playing.hide-controls video {
+  cursor: none;
+}
+
+/* Menús de Configuración (Subtítulos, Calidad, etc.) */
+.dynamo-menu-context {
+  position: absolute;
+  bottom: 60px;
+  right: 16px;
+  width: 240px;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 14px;
+  background: rgba(20, 20, 20, 0.95);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  transform: translateY(10px);
+  z-index: 10;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.dynamo-menu-context.active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.dynamo-menu-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  font-weight: 700;
+  font-size: 16px;
+  background: rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.dynamo-menu-header:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dynamo-menu-list {
+  list-style: none;
+  margin: 0;
+  padding: 8px 0;
+  max-height: 260px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.dynamo-menu-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dynamo-menu-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.dynamo-menu-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.dynamo-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+.dynamo-menu-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dynamo-menu-item.selected {
+  font-weight: 700;
+  /* Netflix usa un checkmark en lugar de colorear el texto, 
+     pero si usas color, mantenemos el blanco puro u rojo según preferencia */
+  color: #fff; 
+}
+
+.dynamo-menu-item .val {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #aaa;
+}
+
+/* Subtítulos Nativos estilo Netflix (Sin fondo de caja, solo sombra) */
+.dynamo-wrapper video::cue {
+  background: transparent;
+  color: #fff;
+  font-family: 'Netflix Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 22px; /* Tamaño de TV estándar */
+  line-height: 1.3;
+  text-shadow: 
+    0px 0px 4px rgba(0, 0, 0, 0.8),
+    0px 0px 8px rgba(0, 0, 0, 0.8),
+    2px 2px 3px rgba(0, 0, 0, 0.9);
+}
+
+/* Ambient canvas */
+.dynamo-ambient-canvas {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(1.1);
+  z-index: 0;
+  filter: blur(60px) brightness(1.2) saturate(1.5);
+  transition: opacity 1.5s;
+}
+
+.dynamo-wrapper.ambient-active .dynamo-ambient-canvas {
+  opacity: 0.4;
+}
+
+.dynamo-pip-btn {
+  display: none;
+}
+`;
