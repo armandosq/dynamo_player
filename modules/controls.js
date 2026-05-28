@@ -1,32 +1,21 @@
 /* =========================================================
-   Dynamo Player — modules/controls.js
-   HBO Max Style - Modern & Optimized Controls
+    Dynamo Player — modules/controls.js
+    Control HTML construction and interaction logic:
+    progress, volume, PiP, fullscreen, overscreen, and ambient.
    ========================================================= */
 
 import { formatTime, ripple } from './utils.js';
 
-// Constants
-const HIDE_DELAY = 3000;
-const SEEK_STEP = 10;
-const KEYBOARD_SEEK = 5;
-const VOLUME_STEP = 0.1;
-const THUMBNAIL_THROTTLE = 150;
-
 /**
- * Creates an HTML element with optional classes and attributes
- */
-const createElement = (tag, className = '', innerHTML = '') => {
-  const el = document.createElement(tag);
-  if (className) el.className = className;
-  if (innerHTML) el.innerHTML = innerHTML;
-  return el;
-};
-
-/**
- * Builds the bottom control bar
+ * Builds and inserts the HTML for the bottom control bar.
+ * @param {HTMLElement} wrapper
+ * @param {object} ICONS - Object containing SVGs
+ * @returns {HTMLElement} The .dynamo-controls element
  */
 export function buildControls(wrapper, ICONS) {
-  const controls = createElement('div', 'dynamo-controls', `
+  const controls = document.createElement('div');
+  controls.className = 'dynamo-controls';
+  controls.innerHTML = `
     <div class="dynamo-progress-wrap">
       <div class="dynamo-progress-track">
         <div class="dynamo-progress-buffer"></div>
@@ -39,569 +28,353 @@ export function buildControls(wrapper, ICONS) {
       </div>
     </div>
     <div class="dynamo-bottom">
-      <button class="dynamo-btn dynamo-play-btn" aria-label="Play">${ICONS.play}</button>
+      <button class="dynamo-btn dynamo-back-btn" title="Back 10s">${ICONS.back10}</button>
+      <button class="dynamo-btn dynamo-play-btn">${ICONS.play}</button>
+      <button class="dynamo-btn dynamo-fwd-btn" title="Forward 10s">${ICONS.forward10}</button>
       <div class="dynamo-volume-group">
-        <button class="dynamo-btn dynamo-mute-btn" aria-label="Mute">${ICONS.volumeHigh}</button>
+        <button class="dynamo-btn dynamo-mute-btn">${ICONS.volumeHigh}</button>
         <div class="dynamo-volume-slider">
-          <input type="range" min="0" max="1" step="0.01" value="1" class="dynamo-vol-range" aria-label="Volume">
+          <input type="range" min="0" max="1" step="0.02" value="1" class="dynamo-vol-range">
         </div>
       </div>
-      <span class="dynamo-time dynamo-time-display">0:00 / 0:00</span>
       <span class="dynamo-spacer"></span>
-      <button class="dynamo-btn dynamo-pip-btn" aria-label="Picture in Picture">${ICONS.pip}</button>
-      <button class="dynamo-btn dynamo-config-btn" aria-label="Settings">${ICONS.config}</button>
-      <button class="dynamo-btn dynamo-fs-btn" aria-label="Fullscreen">${ICONS.fullscreen}</button>
+      <button class="dynamo-btn dynamo-pip-btn" title="Mini player">${ICONS.pip}</button>
+      <button class="dynamo-btn dynamo-config-btn" title="Settings">${ICONS.config}</button>
+      <span class="dynamo-time dynamo-time-display">0:00 / 0:00</span>
+      <button class="dynamo-btn dynamo-fs-btn">${ICONS.fullscreen}</button>
     </div>
-  `);
-  
+  `;
   wrapper.appendChild(controls);
   return controls;
 }
 
 /**
- * Builds overscreen controls (center play/pause, skip buttons)
+ * Builds overscreen buttons (layered over the video) if the attribute is active.
+ * @param {HTMLElement} wrapper
+ * @param {HTMLVideoElement} video
+ * @param {object} ICONS
  */
 export function buildOverscreen(wrapper, video, ICONS) {
-  if (video.getAttribute('controlsOverscreen') !== 'true') return null;
+  if (video.getAttribute('controlsOverscreen') !== 'true') return;
 
-  const overscreen = createElement('div', 'dynamo-overscreen', `
-    <button class="dynamo-btn-os back-10-os" aria-label="Rewind 10 seconds">${ICONS.back10}</button>
-    <button class="dynamo-btn-os play-pause-os" aria-label="Play">${ICONS.play}</button>
-    <button class="dynamo-btn-os fwd-10-os" aria-label="Forward 10 seconds">${ICONS.forward10}</button>
-  `);
-  
+  const overscreen = document.createElement('div');
+  overscreen.className = 'dynamo-overscreen';
+  overscreen.innerHTML = `
+    <button class="dynamo-btn-os back-10-os">${ICONS.back10}</button>
+    <button class="dynamo-btn-os play-pause-os">${ICONS.play}</button>
+    <button class="dynamo-btn-os fwd-10-os">${ICONS.forward10}</button>
+  `;
   wrapper.appendChild(overscreen);
 
-  const playBtn = overscreen.querySelector('.play-pause-os');
-  const backBtn = overscreen.querySelector('.back-10-os');
-  const fwdBtn = overscreen.querySelector('.fwd-10-os');
+  const btnPlayOs = overscreen.querySelector('.play-pause-os');
+  video.addEventListener('play',  () => btnPlayOs.innerHTML = ICONS.pause);
+  video.addEventListener('pause', () => btnPlayOs.innerHTML = ICONS.play);
 
-  // Event handlers with event delegation pattern
-  const handleClick = (e) => {
-    e.stopPropagation();
-    const target = e.target.closest('.dynamo-btn-os');
-    if (!target) return;
-
-    if (target.classList.contains('play-pause-os')) {
-      video.paused ? video.play() : video.pause();
-    } else if (target.classList.contains('back-10-os')) {
-      video.currentTime = Math.max(0, video.currentTime - SEEK_STEP);
-    } else if (target.classList.contains('fwd-10-os')) {
-      video.currentTime = Math.min(video.duration, video.currentTime + SEEK_STEP);
-    }
-  };
-
-  overscreen.addEventListener('click', handleClick);
-
-  // Sync play button icon
-  const syncIcon = () => {
-    playBtn.innerHTML = video.paused ? ICONS.play : ICONS.pause;
-    playBtn.setAttribute('aria-label', video.paused ? 'Play' : 'Pause');
-  };
-
-  video.addEventListener('play', syncIcon);
-  video.addEventListener('pause', syncIcon);
-
-  return overscreen;
+  btnPlayOs.onclick = (e) => { e.stopPropagation(); video.paused ? video.play() : video.pause(); };
+  overscreen.querySelector('.back-10-os').onclick = (e) => { e.stopPropagation(); video.currentTime -= 10; };
+  overscreen.querySelector('.fwd-10-os').onclick  = (e) => { e.stopPropagation(); video.currentTime += 10; };
 }
 
 /**
- * Main control binding function
+ * Binds all event logic to the already inserted control elements.
+ *
+ * @param {HTMLVideoElement} video
+ * @param {HTMLElement} wrapper
+ * @param {HTMLElement} controls
+ * @param {object} ICONS
+ * @param {object} state - Shared player state
+ * @param {Function} loadVideoSource - To change quality from the menu
  */
 export function bindControls(video, wrapper, controls, ICONS, state, loadVideoSource) {
-  // Cache DOM references
-  const refs = {
-    playBtn: controls.querySelector('.dynamo-play-btn'),
-    muteBtn: controls.querySelector('.dynamo-mute-btn'),
-    fsBtn: controls.querySelector('.dynamo-fs-btn'),
-    pipBtn: controls.querySelector('.dynamo-pip-btn'),
-    configBtn: controls.querySelector('.dynamo-config-btn'),
-    progressWrap: controls.querySelector('.dynamo-progress-wrap'),
-    progressTrack: controls.querySelector('.dynamo-progress-track'),
-    progressFill: controls.querySelector('.dynamo-progress-fill'),
-    progressBuffer: controls.querySelector('.dynamo-progress-buffer'),
-    progressThumb: controls.querySelector('.dynamo-progress-thumb'),
-    progressTooltip: controls.querySelector('.dynamo-progress-tooltip'),
-    progressPreview: controls.querySelector('.dynamo-progress-preview-container'),
-    thumbBox: controls.querySelector('.dynamo-progress-thumb-box'),
-    timeDisplay: controls.querySelector('.dynamo-time-display'),
-    volRange: controls.querySelector('.dynamo-vol-range'),
-    poster: wrapper.querySelector('.dynamo-poster'),
-    overlay: wrapper.querySelector('.dynamo-overlay'),
-    menuContext: wrapper.querySelector('.dynamo-menu-context')
-  };
+  // --- DOM References ---
+  const playBtn        = controls.querySelector('.dynamo-play-btn');
+  const muteBtn        = controls.querySelector('.dynamo-mute-btn');
+  const fsBtn          = controls.querySelector('.dynamo-fs-btn');
+  const pipBtn         = controls.querySelector('.dynamo-pip-btn');
+  const backBtn        = controls.querySelector('.dynamo-back-btn');
+  const fwdBtn         = controls.querySelector('.dynamo-fwd-btn');
+  const progressWrap   = controls.querySelector('.dynamo-progress-wrap');
+  const progressFill   = controls.querySelector('.dynamo-progress-fill');
+  const progressBuffer = controls.querySelector('.dynamo-progress-buffer');
+  const progressThumb  = controls.querySelector('.dynamo-progress-thumb');
+  const timeDisplay    = controls.querySelector('.dynamo-time-display');
+  const volRange       = controls.querySelector('.dynamo-vol-range');
+  const progressTooltip          = controls.querySelector('.dynamo-progress-tooltip');
+  const progressPreviewContainer = controls.querySelector('.dynamo-progress-preview-container');
+  const thumbBox       = controls.querySelector('.dynamo-progress-thumb-box');
 
-  // State
   let isSeeking = false;
   let hideTimer = null;
   let prevVolume = 1;
-  let rafId = null;
 
-  // Utility functions
-  const getDuration = () => {
-    if (video.duration === Infinity && video.seekable?.length > 0) {
+  // --- UI Helpers ---
+  const poster = wrapper.querySelector('.dynamo-poster');
+  const overlay = wrapper.querySelector('.dynamo-overlay');
+  const menuContext = wrapper.querySelector('.dynamo-menu-context');
+
+  const getRealDuration = () => {
+    if (video.duration === Infinity && video.seekable && video.seekable.length > 0) {
       return video.seekable.end(video.seekable.length - 1);
     }
-    return video.duration || 0;
+    return video.duration;
   };
 
-  const clamp = (val, min, max) => Math.max(min, Math.min(max, val));
+  function showUI() {
+    if (poster.classList.contains('hidden')) wrapper.classList.remove('hide-controls');
+  }
 
-  const updateProgress = (percent) => {
-    const pct = `${percent * 100}%`;
-    refs.progressFill.style.width = pct;
-    refs.progressThumb.style.left = pct;
-  };
-
-  const updateTimeDisplay = (current, total) => {
-    refs.timeDisplay.textContent = `${formatTime(current)} / ${formatTime(total)}`;
-  };
-
-  // UI visibility
-  const showControls = () => {
-    if (refs.poster.classList.contains('hidden')) {
-      wrapper.classList.remove('hide-controls');
-    }
-  };
-
-  const hideControls = () => {
-    wrapper.classList.add('hide-controls');
-  };
-
-  const scheduleHide = () => {
+  function scheduleHide() {
     clearTimeout(hideTimer);
-    if (!video.paused) {
-      hideTimer = setTimeout(hideControls, HIDE_DELAY);
+    if (!video.paused) hideTimer = setTimeout(() => wrapper.classList.add('hide-controls'), 2800);
+  }
+
+  function seek(e) {
+    const rect = progressWrap.getBoundingClientRect();
+    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const realDuration = getRealDuration();
+    if (realDuration && !isNaN(realDuration)) {
+      const currentTime = pct * realDuration;
+      video.currentTime = currentTime;
+      progressFill.style.width = progressThumb.style.left = pct * 100 + '%';
+      timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(realDuration)}`;
     }
-  };
+  }
 
-  // Seek handling
-  const handleSeek = (e) => {
-    const rect = refs.progressWrap.getBoundingClientRect();
-    const percent = clamp((e.clientX - rect.left) / rect.width, 0, 1);
-    const duration = getDuration();
-    
-    if (duration && !isNaN(duration)) {
-      video.currentTime = percent * duration;
-      updateProgress(percent);
-      updateTimeDisplay(video.currentTime, duration);
-    }
-  };
+  const togglePlay = () => video.paused ? video.play() : video.pause();
 
-  // Play/pause toggle
-  const togglePlay = () => {
-    video.paused ? video.play() : video.pause();
-  };
+  // --- Seekbar ---
+  progressWrap.addEventListener('mousedown', (e) => { isSeeking = true; seek(e); });
+  window.addEventListener('mousemove', (e) => { if (isSeeking) seek(e); });
+  window.addEventListener('mouseup', () => { isSeeking = false; });
 
-  // Progress bar events
-  refs.progressWrap.addEventListener('mousedown', (e) => {
-    isSeeking = true;
-    handleSeek(e);
-  });
-
-  refs.progressWrap.addEventListener('touchstart', (e) => {
-    isSeeking = true;
-    handleSeek(e.touches[0]);
-  }, { passive: true });
-
-  // Global move/up events
-  const onMove = (e) => {
-    if (isSeeking) {
-      const event = e.touches ? e.touches[0] : e;
-      handleSeek(event);
-    }
-  };
-
-  const onUp = () => {
-    isSeeking = false;
-  };
-
-  window.addEventListener('mousemove', onMove);
-  window.addEventListener('mouseup', onUp);
-  window.addEventListener('touchmove', onMove, { passive: true });
-  window.addEventListener('touchend', onUp);
-
-  // Video events
+  // --- Buffer ---
   video.addEventListener('progress', () => {
-    const duration = getDuration();
-    if (duration > 0 && video.buffered.length > 0) {
-      const buffered = video.buffered.end(video.buffered.length - 1);
-      refs.progressBuffer.style.width = `${(buffered / duration) * 100}%`;
+    if (video.duration > 0 && video.buffered.length > 0) {
+      const bufferedEnd = video.buffered.end(video.buffered.length - 1);
+      progressBuffer.style.width = (bufferedEnd / video.duration) * 100 + '%';
     }
   });
 
+  // --- Timeupdate ---
   video.addEventListener('timeupdate', () => {
     if (!isSeeking) {
-      const duration = getDuration();
-      if (duration && !isNaN(duration)) {
-        updateProgress(video.currentTime / duration);
-        updateTimeDisplay(video.currentTime, duration);
+      const realDuration = getRealDuration();
+      if (realDuration && !isNaN(realDuration)) {
+        const pct = (video.currentTime / realDuration) * 100 + '%';
+        progressFill.style.width = progressThumb.style.left = pct;
+        timeDisplay.textContent = `${formatTime(video.currentTime)} / ${formatTime(realDuration)}`;
       }
     }
   });
 
-  video.addEventListener('loadedmetadata', () => {
-    updateTimeDisplay(0, getDuration());
-  });
-
+  // --- Playback state events ---
   video.addEventListener('play', () => {
     wrapper.classList.add('is-playing');
-    refs.playBtn.innerHTML = ICONS.pause;
-    refs.playBtn.setAttribute('aria-label', 'Pause');
-    refs.poster.classList.add('hidden');
-    refs.overlay.classList.remove('visible');
-    refs.menuContext?.classList.remove('active');
+    playBtn.innerHTML = ICONS.pause;
+    poster.classList.add('hidden');
+    overlay.classList.remove('visible');
+    menuContext.classList.remove('active');
     scheduleHide();
   });
 
   video.addEventListener('pause', () => {
     wrapper.classList.remove('is-playing');
-    refs.playBtn.innerHTML = ICONS.play;
-    refs.playBtn.setAttribute('aria-label', 'Play');
-    refs.overlay.classList.add('visible');
-    showControls();
-    clearTimeout(hideTimer);
+    playBtn.innerHTML = ICONS.play;
+    overlay.classList.add('visible');
+    wrapper.classList.remove('hide-controls');
   });
 
   video.addEventListener('ended', () => {
-    refs.playBtn.innerHTML = ICONS.replay || ICONS.play;
-    refs.overlay.classList.add('visible');
+    playBtn.innerHTML = ICONS.play;
+    overlay.classList.add('visible');
     wrapper.classList.remove('hide-controls', 'is-playing');
   });
 
-  // Button clicks
-  refs.overlay.addEventListener('click', (e) => {
+  // --- Buttons ---
+  overlay.onclick = (e) => {
     e.stopPropagation();
     ripple(wrapper, wrapper.offsetWidth / 2, wrapper.offsetHeight / 2);
     togglePlay();
-  });
+  };
 
-  video.addEventListener('click', (e) => {
-    const rect = wrapper.getBoundingClientRect();
-    ripple(wrapper, e.clientX - rect.left, e.clientY - rect.top);
+  video.onclick = (e) => {
+    ripple(wrapper, e.clientX - wrapper.getBoundingClientRect().left, e.clientY - wrapper.getBoundingClientRect().top);
     togglePlay();
-  });
-
-  video.addEventListener('dblclick', (e) => {
-    e.preventDefault();
-    const rect = wrapper.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const third = rect.width / 3;
-
-    if (clickX < third) {
-      video.currentTime = Math.max(0, video.currentTime - SEEK_STEP);
-    } else if (clickX > third * 2) {
-      video.currentTime = Math.min(getDuration(), video.currentTime + SEEK_STEP);
-    } else {
-      toggleFullscreen();
-    }
-  });
+  };
 
   video.addEventListener('contextmenu', (e) => e.preventDefault());
 
-  refs.playBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    togglePlay();
-  });
+  playBtn.onclick = (e) => { e.stopPropagation(); togglePlay(); };
+  backBtn.onclick = (e) => { e.stopPropagation(); video.currentTime -= 10; };
+  fwdBtn.onclick  = (e) => { e.stopPropagation(); video.currentTime += 10; };
 
-  // Volume controls
-  refs.volRange.addEventListener('input', (e) => {
-    const vol = parseFloat(e.target.value);
-    video.volume = vol;
-    video.muted = vol === 0;
-    if (vol > 0) prevVolume = vol;
-  });
+  // --- Volume ---
+  volRange.oninput = (e) => {
+    video.volume = e.target.value;
+    video.muted = video.volume === 0;
+    prevVolume = video.volume;
+  };
 
-  refs.muteBtn.addEventListener('click', (e) => {
+  muteBtn.onclick = (e) => {
     e.stopPropagation();
-    if (video.muted || video.volume === 0) {
-      video.muted = false;
-      video.volume = prevVolume || 0.5;
-    } else {
-      prevVolume = video.volume;
-      video.muted = true;
-    }
-  });
+    if (video.muted) { video.muted = false; video.volume = prevVolume; }
+    else { prevVolume = video.volume; video.muted = true; }
+  };
 
   video.addEventListener('volumechange', () => {
-    const vol = video.muted ? 0 : video.volume;
-    refs.volRange.value = vol;
-    
-    // Update slider visual
-    refs.volRange.style.setProperty('--volume-fill', `${vol * 100}%`);
-    
-    // Update icon
-    let icon, label;
-    if (vol === 0 || video.muted) {
-      icon = ICONS.volumeMute;
-      label = 'Unmute';
-    } else if (vol < 0.5) {
-      icon = ICONS.volumeLow;
-      label = 'Mute';
-    } else {
-      icon = ICONS.volumeHigh;
-      label = 'Mute';
-    }
-    refs.muteBtn.innerHTML = icon;
-    refs.muteBtn.setAttribute('aria-label', label);
+    volRange.value = video.muted ? 0 : video.volume;
+    muteBtn.innerHTML = (video.muted || video.volume === 0)
+      ? ICONS.volumeMute
+      : (video.volume < 0.5 ? ICONS.volumeLow : ICONS.volumeHigh);
   });
 
-  // Fullscreen
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      wrapper.requestFullscreen?.() || wrapper.webkitRequestFullscreen?.();
-    } else {
-      document.exitFullscreen?.() || document.webkitExitFullscreen?.();
-    }
-  };
-
-  refs.fsBtn.addEventListener('click', (e) => {
+  // --- Fullscreen ---
+  fsBtn.onclick = (e) => {
     e.stopPropagation();
-    toggleFullscreen();
-  });
-
-  const onFullscreenChange = () => {
-    const isFs = !!document.fullscreenElement;
-    refs.fsBtn.innerHTML = isFs ? ICONS.exitFullscreen : ICONS.fullscreen;
-    refs.fsBtn.setAttribute('aria-label', isFs ? 'Exit Fullscreen' : 'Fullscreen');
+    if (!document.fullscreenElement) {
+      wrapper.requestFullscreen();
+      fsBtn.innerHTML = ICONS.exitFullscreen;
+    } else {
+      document.exitFullscreen();
+      fsBtn.innerHTML = ICONS.fullscreen;
+    }
   };
 
-  document.addEventListener('fullscreenchange', onFullscreenChange);
-  document.addEventListener('webkitfullscreenchange', onFullscreenChange);
-
-  // Picture-in-Picture
-  const pipEnabled = video.getAttribute('inPicture') === 'true' && document.pictureInPictureEnabled;
-  refs.pipBtn.style.display = pipEnabled ? 'flex' : 'none';
-
-  if (pipEnabled) {
-    refs.pipBtn.addEventListener('click', async (e) => {
+  // --- Picture-in-Picture ---
+  const pip = video.getAttribute('inPicture') === 'true';
+  if (pip && document.pictureInPictureEnabled) {
+    pipBtn.style.display = 'block';
+    pipBtn.onclick = (e) => {
       e.stopPropagation();
-      try {
-        if (document.pictureInPictureElement) {
-          await document.exitPictureInPicture();
-        } else {
-          await video.requestPictureInPicture();
-        }
-      } catch (err) {
-        console.warn('PiP not available:', err);
-      }
-    });
+      if (document.pictureInPictureElement) document.exitPictureInPicture();
+      else video.requestPictureInPicture().catch(() => {});
+    };
   }
 
-  // Mouse/touch visibility
-  let touchTimeout;
-  
-  wrapper.addEventListener('mousemove', () => {
-    showControls();
-    scheduleHide();
-  });
-
-  wrapper.addEventListener('mouseleave', () => {
-    if (!video.paused) scheduleHide();
-  });
-
-  wrapper.addEventListener('touchstart', () => {
-    showControls();
-    clearTimeout(touchTimeout);
-    touchTimeout = setTimeout(scheduleHide, 100);
-  }, { passive: true });
-
-  // Keyboard controls
+  // --- Show/hide controls ---
+  wrapper.onmousemove = () => { showUI(); scheduleHide(); };
   wrapper.setAttribute('tabindex', '0');
-  
-  wrapper.addEventListener('keydown', (e) => {
-    const key = e.code;
-    
-    switch (key) {
-      case 'Space':
-      case 'KeyK':
-        e.preventDefault();
-        togglePlay();
-        break;
-      case 'ArrowRight':
-      case 'KeyL':
-        e.preventDefault();
-        video.currentTime = Math.min(getDuration(), video.currentTime + KEYBOARD_SEEK);
-        break;
-      case 'ArrowLeft':
-      case 'KeyJ':
-        e.preventDefault();
-        video.currentTime = Math.max(0, video.currentTime - KEYBOARD_SEEK);
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        video.volume = clamp(video.volume + VOLUME_STEP, 0, 1);
-        break;
-      case 'ArrowDown':
-        e.preventDefault();
-        video.volume = clamp(video.volume - VOLUME_STEP, 0, 1);
-        break;
-      case 'KeyM':
-        e.preventDefault();
-        video.muted = !video.muted;
-        break;
-      case 'KeyF':
-        e.preventDefault();
-        toggleFullscreen();
-        break;
-      case 'Escape':
-        if (refs.menuContext?.classList.contains('active')) {
-          refs.menuContext.classList.remove('active');
-        }
-        break;
-      case 'Home':
-        e.preventDefault();
-        video.currentTime = 0;
-        break;
-      case 'End':
-        e.preventDefault();
-        video.currentTime = getDuration();
-        break;
-    }
-    
-    // Number keys for percentage seeking (0-9)
-    if (/^Digit[0-9]$/.test(key)) {
-      e.preventDefault();
-      const num = parseInt(key.replace('Digit', ''), 10);
-      video.currentTime = getDuration() * (num / 10);
-    }
-  });
+  wrapper.onkeydown = (e) => {
+    if (e.code === 'Space')      { e.preventDefault(); togglePlay(); }
+    if (e.code === 'ArrowRight') video.currentTime += 5;
+    if (e.code === 'ArrowLeft')  video.currentTime -= 5;
+  };
 
-  // Thumbnail preview
-  initThumbnailPreview(video, refs);
+  // --- Progress bar thumbnails ---
+  bindProgressPreview(video, progressWrap, progressTooltip, progressPreviewContainer, thumbBox);
 
-  return refs;
+  return { progressWrap, progressFill, progressBuffer, progressThumb, timeDisplay, volRange, playBtn, muteBtn, fsBtn, pipBtn, backBtn, fwdBtn };
 }
 
 /**
- * Initialize thumbnail preview on progress bar hover
+ * Thumbnail preview logic on seekbar hover.
  */
-function initThumbnailPreview(video, refs) {
-  const needsThumbs = video.getAttribute('autoThumbnails') === 'true';
-  
-  if (!needsThumbs) {
-    if (refs.thumbBox) refs.thumbBox.style.display = 'none';
-    return;
+function bindProgressPreview(video, progressWrap, progressTooltip, progressPreviewContainer, thumbBox) {
+  const needsAutoThumbs = video.getAttribute('autoThumbnails') === 'true';
+
+  let hiddenVideo = null;
+  let hiddenCanvas = null;
+  let hiddenCtx = null;
+  let isSeekingHidden = false;
+  let lastSeekTime = 0;
+
+  if (needsAutoThumbs) {
+    hiddenVideo = document.createElement('video');
+    hiddenVideo.preload = 'metadata';
+    hiddenVideo.muted = true;
+    hiddenVideo.crossOrigin = 'anonymous';
+
+    // Use the lowest quality source available for the ghost video
+    hiddenVideo.src = video.src || video._currentSrc || '';
+
+    hiddenCanvas = document.createElement('canvas');
+    hiddenCanvas.width = 160;
+    hiddenCanvas.height = 90;
+    hiddenCtx = hiddenCanvas.getContext('2d', { alpha: false });
+
+    if (thumbBox) thumbBox.appendChild(hiddenCanvas);
+  } else {
+    if (thumbBox) thumbBox.style.display = 'none';
   }
 
-  let ghostVideo = null;
-  let canvas = null;
-  let ctx = null;
-  let lastSeekTime = 0;
-  let seeking = false;
+  progressWrap.addEventListener('mousemove', (e) => {
+    if (!video.duration || isNaN(video.duration)) return;
 
-  // Create ghost video for thumbnails
-  ghostVideo = document.createElement('video');
-  ghostVideo.preload = 'metadata';
-  ghostVideo.muted = true;
-  ghostVideo.crossOrigin = 'anonymous';
-  ghostVideo.src = video.src || video._currentSrc || '';
+    const rect = progressWrap.getBoundingClientRect();
+    let pct = (e.clientX - rect.left) / rect.width;
+    pct = Math.max(0, Math.min(1, pct));
+    const hoverTime = pct * video.duration;
 
-  canvas = document.createElement('canvas');
-  canvas.width = 160;
-  canvas.height = 90;
-  ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
+    progressTooltip.textContent = formatTime(hoverTime);
+    progressPreviewContainer.style.left = `${pct * 100}%`;
 
-  if (refs.thumbBox) refs.thumbBox.appendChild(canvas);
-
-  // Throttled thumbnail generation
-  refs.progressWrap.addEventListener('mousemove', (e) => {
-    const duration = video.duration;
-    if (!duration || isNaN(duration)) return;
-
-    const rect = refs.progressWrap.getBoundingClientRect();
-    const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    const hoverTime = percent * duration;
-
-    // Update tooltip
-    refs.progressTooltip.textContent = formatTime(hoverTime);
-    refs.progressPreview.style.left = `${percent * 100}%`;
-
-    // Throttle thumbnail seeking
-    const now = Date.now();
-    if (!seeking && ghostVideo.readyState >= 2 && now - lastSeekTime > THUMBNAIL_THROTTLE) {
-      seeking = true;
-      lastSeekTime = now;
-      ghostVideo.currentTime = hoverTime;
-
-      ghostVideo.addEventListener('seeked', () => {
-        try {
-          ctx.drawImage(ghostVideo, 0, 0, canvas.width, canvas.height);
-        } catch (e) {
-          // CORS or render error - silent fail
-        }
-        seeking = false;
-      }, { once: true });
+    if (needsAutoThumbs && hiddenVideo && hiddenVideo.readyState >= 2) {
+      const now = Date.now();
+      if (!isSeekingHidden && (now - lastSeekTime > 100)) {
+        isSeekingHidden = true;
+        lastSeekTime = now;
+        hiddenVideo.currentTime = hoverTime;
+        hiddenVideo.addEventListener('seeked', () => {
+          try {
+            hiddenCtx.drawImage(hiddenVideo, 0, 0, hiddenCanvas.width, hiddenCanvas.height);
+          } catch (error) {
+            console.warn('DynamoPlayer: Thumbnail capture failed (CORS or render).');
+          } finally {
+            isSeekingHidden = false;
+          }
+        }, { once: true });
+      }
     }
   });
 }
 
 /**
- * Ambient light effect that samples video colors
+ * Initializes the Ambient Light effect if the attribute is active.
+ * @param {HTMLVideoElement} video
+ * @param {HTMLElement} wrapper
+ * @param {string} thumbUrl
  */
 export function buildAmbientMode(video, wrapper, thumbUrl) {
   if (video.getAttribute('ambientMode') !== 'true') return;
 
-  const canvas = document.createElement('canvas');
-  canvas.className = 'dynamo-ambient-canvas';
-  canvas.width = 32;
-  canvas.height = 18;
-  wrapper.prepend(canvas);
+  const ambientCanvas = document.createElement('canvas');
+  ambientCanvas.className = 'dynamo-ambient-canvas';
+  ambientCanvas.width = 32;
+  ambientCanvas.height = 18;
+  wrapper.prepend(ambientCanvas);
 
-  const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
-  let rafId = null;
+  const ambientCtx = ambientCanvas.getContext('2d', { alpha: false });
+  let ambientId;
 
-  const drawFrame = (source) => {
+  const drawStaticAmbient = (sourceElement) => {
     try {
-      ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
+      ambientCtx.drawImage(sourceElement, 0, 0, ambientCanvas.width, ambientCanvas.height);
       wrapper.classList.add('ambient-active');
     } catch (e) {
-      // CORS block - silent fail
+      console.warn('DynamoPlayer: Ambient mode CORS block on static image.');
     }
   };
 
-  const animate = () => {
+  const renderAmbient = () => {
     if (video.paused || video.ended) return;
-    drawFrame(video);
-    rafId = requestAnimationFrame(animate);
+    try {
+      ambientCtx.drawImage(video, 0, 0, ambientCanvas.width, ambientCanvas.height);
+    } catch (e) {}
+    ambientId = requestAnimationFrame(renderAmbient);
   };
 
-  // Initial frame from poster or video
   if (thumbUrl) {
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    img.onload = () => drawFrame(img);
+    img.onload = () => drawStaticAmbient(img);
     img.src = thumbUrl;
   } else {
     video.addEventListener('loadeddata', () => {
-      requestAnimationFrame(() => drawFrame(video));
+      setTimeout(() => drawStaticAmbient(video), 200);
     }, { once: true });
   }
 
-  video.addEventListener('play', () => {
-    wrapper.classList.add('ambient-active');
-    animate();
-  });
-
-  video.addEventListener('pause', () => {
-    if (rafId) cancelAnimationFrame(rafId);
-  });
-
-  video.addEventListener('ended', () => {
-    if (rafId) cancelAnimationFrame(rafId);
-  });
-
-  // Cleanup on video removal
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((m) => {
-      m.removedNodes.forEach((node) => {
-        if (node === video || node.contains?.(video)) {
-          if (rafId) cancelAnimationFrame(rafId);
-          observer.disconnect();
-        }
-      });
-    });
-  });
-
-  observer.observe(wrapper.parentNode || document.body, { childList: true, subtree: true });
+  video.addEventListener('play',  () => { wrapper.classList.add('ambient-active'); renderAmbient(); });
+  video.addEventListener('pause', () => cancelAnimationFrame(ambientId));
+  video.addEventListener('ended', () => cancelAnimationFrame(ambientId));
 }
