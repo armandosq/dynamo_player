@@ -1,7 +1,7 @@
 /* =========================================================
-   Dynamo Player — modules/menu.js
-   Contextual Settings Menu:
-   Quality, Audio, Speed, Subtitles, Aspect Ratio, Cast & Fullscreen.
+    Dynamo Player — modules/menu.js
+    Contextual Settings Menu:
+    Quality, Audio, Speed, and Subtitles.
    ========================================================= */
 
 /**
@@ -20,12 +20,12 @@ export function buildMenu(video, menuContext, configBtn, state, loadVideoSource)
     menuContext.classList.toggle('active');
     if (!menuContext.classList.contains('active')) return;
 
-    // Pausar el video mientras se navega por el menú (opcional, estilo Netflix)
+    // Pause while navigating the menu
     video.paused || video.pause();
     renderMenu('main');
   };
 
-  // Cerrar el menú al hacer clic fuera
+  // Close menu when clicking outside
   document.addEventListener('click', () => menuContext.classList.remove('active'));
 
   // -------------------------------------------------------
@@ -37,23 +37,18 @@ export function buildMenu(video, menuContext, configBtn, state, loadVideoSource)
     else if (view === 'audio')     renderAudio();
     else if (view === 'speed')     renderSpeed();
     else if (view === 'subtitles') renderSubtitles();
-    else if (view === 'aspect')    renderAspectRatio();
 
-    // Botón de "Atrás" en el encabezado de los submenús
+    // "Back" Header — only in sub-views
     const header = menuContext.querySelector('.dynamo-menu-header');
     if (header) {
-      header.onclick = (ev) => { 
-        ev.stopPropagation(); 
-        renderMenu(header.dataset.target); 
-      };
+      header.onclick = (ev) => { ev.stopPropagation(); renderMenu(header.dataset.target); };
     }
   }
 
   // -------------------------------------------------------
-  // Main View (Todos los controles juntos)
+  // Main View
   // -------------------------------------------------------
   function renderMain() {
-    // 1. Calidad
     let currentQuality = 'Auto';
     if (state.hlsInstance && state.videoSources[0]?.isHlsLevel) {
       const found = state.videoSources.find(s => s.id === state.hlsInstance.currentLevel);
@@ -63,16 +58,9 @@ export function buildMenu(video, menuContext, configBtn, state, loadVideoSource)
       if (idx !== -1) currentQuality = state.videoSources[idx].label;
     }
 
-    // 2. Velocidad y Audio
     const currentSpeed = video.playbackRate === 1 ? 'Normal' : `${video.playbackRate}x`;
     const currentAudioLabel = state.globalAudioTracks.find(a => a.id === state.activeAudioTrackId)?.label || 'Original';
-    
-    // 3. Relación de Aspecto
-    const aspectLabels = { 'contain': 'Normal', 'cover': 'Crop', 'fill': 'Stretch' };
-    const currentAspect = video.style.objectFit || 'contain';
-    const currentAspectLabel = aspectLabels[currentAspect] || 'Normal';
 
-    // Construcción de filas dinámicas
     const audioRow = state.globalAudioTracks.length > 1 ? `
       <li class="dynamo-menu-item" data-target="audio">
         <span>Audio</span>
@@ -85,8 +73,6 @@ export function buildMenu(video, menuContext, configBtn, state, loadVideoSource)
         <span class="val">${state.activeSubtitleLabel} <span style="font-size:16px;">&rsaquo;</span></span>
       </li>` : '';
 
-    const fullscreenLabel = document.fullscreenElement ? 'Exit Fullscreen' : 'Fullscreen';
-
     menuContext.innerHTML = `
       <ul class="dynamo-menu-list">
         <li class="dynamo-menu-item" data-target="quality">
@@ -94,56 +80,16 @@ export function buildMenu(video, menuContext, configBtn, state, loadVideoSource)
           <span class="val">${currentQuality} <span style="font-size:16px;">&rsaquo;</span></span>
         </li>
         ${audioRow}
-        ${subsRow}
         <li class="dynamo-menu-item" data-target="speed">
           <span>Speed</span>
           <span class="val">${currentSpeed} <span style="font-size:16px;">&rsaquo;</span></span>
         </li>
-        <li class="dynamo-menu-item" data-target="aspect">
-          <span>Aspect Ratio</span>
-          <span class="val">${currentAspectLabel} <span style="font-size:16px;">&rsaquo;</span></span>
-        </li>
-        <li class="dynamo-menu-item action-item" data-action="cast">
-          <span>Google Cast</span>
-        </li>
-        <li class="dynamo-menu-item action-item" data-action="fullscreen">
-          <span>${fullscreenLabel}</span>
-        </li>
+        ${subsRow}
       </ul>
     `;
 
-    // Asignar eventos de submenús
-    menuContext.querySelectorAll('.dynamo-menu-item:not(.action-item)').forEach(item => {
+    menuContext.querySelectorAll('.dynamo-menu-item').forEach(item => {
       item.onclick = (ev) => { ev.stopPropagation(); renderMenu(item.dataset.target); };
-    });
-
-    // Asignar eventos de acciones directas (Cast y Pantalla Completa)
-    menuContext.querySelectorAll('.action-item').forEach(item => {
-      item.onclick = (ev) => {
-        ev.stopPropagation();
-        const action = item.dataset.action;
-        
-        if (action === 'fullscreen') {
-          const wrapper = video.closest('.dynamo-wrapper');
-          if (!document.fullscreenElement) {
-            wrapper.requestFullscreen();
-          } else {
-            document.exitFullscreen();
-          }
-        } 
-        else if (action === 'cast') {
-          if (window.cast && window.cast.framework) {
-            const castContext = cast.framework.CastContext.getInstance();
-            castContext.requestSession().catch(() => console.log('Cast cancelled.'));
-          } else if (video.remote && video.remote.prompt) {
-            video.remote.prompt().catch(() => {});
-          } else {
-            alert('Google Cast no está disponible en este navegador.');
-          }
-        }
-        
-        menuContext.classList.remove('active');
-      };
     });
   }
 
@@ -177,7 +123,7 @@ export function buildMenu(video, menuContext, configBtn, state, loadVideoSource)
         const newSource = state.videoSources[idx];
 
         if (newSource.isHlsLevel && state.hlsInstance) {
-          state.hlsInstance.currentLevel = newSource.id;
+          state.hlsInstance.currentLevel = newSource.id; // Switch without reloading
         } else {
           const currentTime = video.currentTime;
           const wasPlaying = !video.paused;
@@ -246,36 +192,6 @@ export function buildMenu(video, menuContext, configBtn, state, loadVideoSource)
   }
 
   // -------------------------------------------------------
-  // Aspect Ratio View
-  // -------------------------------------------------------
-  function renderAspectRatio() {
-    const modes = [
-      { val: 'contain', label: 'Normal' },
-      { val: 'cover', label: 'Crop (Fill Screen)' },
-      { val: 'fill', label: 'Stretch' }
-    ];
-
-    const currentMode = video.style.objectFit || 'contain';
-
-    const items = modes.map(m =>
-      `<li class="dynamo-menu-item ${currentMode === m.val ? 'selected' : ''}" data-val="${m.val}">${m.label}</li>`
-    ).join('');
-
-    menuContext.innerHTML = `
-      <div class="dynamo-menu-header" data-target="main"><span style="font-size:18px;">&lsaquo;</span> Aspect Ratio</div>
-      <ul class="dynamo-menu-list">${items}</ul>
-    `;
-
-    menuContext.querySelectorAll('.dynamo-menu-item').forEach(item => {
-      item.onclick = (ev) => {
-        ev.stopPropagation();
-        video.style.objectFit = item.dataset.val;
-        menuContext.classList.remove('active');
-      };
-    });
-  }
-
-  // -------------------------------------------------------
   // Subtitles View
   // -------------------------------------------------------
   function renderSubtitles() {
@@ -300,10 +216,8 @@ export function buildMenu(video, menuContext, configBtn, state, loadVideoSource)
     menuContext.querySelectorAll('.dynamo-menu-item').forEach(item => {
       item.onclick = (ev) => {
         ev.stopPropagation();
-        // Llama a la función global o importada para manejar los subtítulos
-        if (typeof setSubtitle === 'function') {
-          setSubtitle(video, state, item.dataset.label, item.dataset.id);
-        }
+        // Delegate to the subtitles module
+        setSubtitle(video, state, item.dataset.label, item.dataset.id);
         menuContext.classList.remove('active');
       };
     });
