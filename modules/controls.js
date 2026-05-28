@@ -1,7 +1,8 @@
 /* =========================================================
-    Dynamo Player — modules/controls.js
-    Control HTML construction and interaction logic:
-    progress, volume, PiP, fullscreen, overscreen, and ambient.
+   Dynamo Player — modules/controls.js
+   Control HTML construction and interaction logic:
+   progress, volume, PiP, fullscreen, overscreen, ambient,
+   cast, subtitles and aspect ratio.
    ========================================================= */
 
 import { formatTime, ripple } from './utils.js';
@@ -28,20 +29,26 @@ export function buildControls(wrapper, ICONS) {
       </div>
     </div>
     <div class="dynamo-bottom">
-      <button class="dynamo-btn dynamo-back-btn" title="Back 10s">${ICONS.back10}</button>
+      <button class="dynamo-btn dynamo-back-btn" title="Retroceder 10s">${ICONS.back10}</button>
       <button class="dynamo-btn dynamo-play-btn">${ICONS.play}</button>
-      <button class="dynamo-btn dynamo-fwd-btn" title="Forward 10s">${ICONS.forward10}</button>
+      <button class="dynamo-btn dynamo-fwd-btn" title="Adelantar 10s">${ICONS.forward10}</button>
       <div class="dynamo-volume-group">
         <button class="dynamo-btn dynamo-mute-btn">${ICONS.volumeHigh}</button>
         <div class="dynamo-volume-slider">
           <input type="range" min="0" max="1" step="0.02" value="1" class="dynamo-vol-range">
         </div>
       </div>
+      
       <span class="dynamo-spacer"></span>
-      <button class="dynamo-btn dynamo-pip-btn" title="Mini player">${ICONS.pip}</button>
-      <button class="dynamo-btn dynamo-config-btn" title="Settings">${ICONS.config}</button>
+      
+      <button class="dynamo-btn dynamo-subtitles-btn" title="Subtítulos">${ICONS.subtitles}</button>
+      <button class="dynamo-btn dynamo-cast-btn" title="Google Cast">${ICONS.cast}</button>
+      <button class="dynamo-btn dynamo-aspect-btn" title="Relación de Aspecto">${ICONS.theater}</button>
+      
+      <button class="dynamo-btn dynamo-pip-btn" title="Mini reproductor">${ICONS.pip}</button>
+      <button class="dynamo-btn dynamo-config-btn" title="Configuración">${ICONS.config}</button>
       <span class="dynamo-time dynamo-time-display">0:00 / 0:00</span>
-      <button class="dynamo-btn dynamo-fs-btn">${ICONS.fullscreen}</button>
+      <button class="dynamo-btn dynamo-fs-btn" title="Pantalla Completa">${ICONS.fullscreen}</button>
     </div>
   `;
   wrapper.appendChild(controls);
@@ -102,6 +109,12 @@ export function bindControls(video, wrapper, controls, ICONS, state, loadVideoSo
   const progressTooltip          = controls.querySelector('.dynamo-progress-tooltip');
   const progressPreviewContainer = controls.querySelector('.dynamo-progress-preview-container');
   const thumbBox       = controls.querySelector('.dynamo-progress-thumb-box');
+
+  // Referencias a los nuevos botones
+  const subtitlesBtn = controls.querySelector('.dynamo-subtitles-btn');
+  const castBtn      = controls.querySelector('.dynamo-cast-btn');
+  const aspectBtn    = controls.querySelector('.dynamo-aspect-btn');
+  const configBtn    = controls.querySelector('.dynamo-config-btn');
 
   let isSeeking = false;
   let hideTimer = null;
@@ -228,6 +241,40 @@ export function bindControls(video, wrapper, controls, ICONS, state, loadVideoSo
       : (video.volume < 0.5 ? ICONS.volumeLow : ICONS.volumeHigh);
   });
 
+  // --- Relación de Aspecto (Aspect Ratio) ---
+  const aspectModes = ['contain', 'cover', 'fill'];
+  let currentAspect = 0;
+  aspectBtn.onclick = (e) => {
+    e.stopPropagation();
+    currentAspect = (currentAspect + 1) % aspectModes.length;
+    video.style.objectFit = aspectModes[currentAspect];
+  };
+
+  // --- Google Cast ---
+  castBtn.onclick = (e) => {
+    e.stopPropagation();
+    // Intenta usar el SDK de Cast si está cargado globalmente
+    if (window.cast && window.cast.framework) {
+      const castContext = cast.framework.CastContext.getInstance();
+      castContext.requestSession().catch(() => console.log('Cast session cancelled/failed.'));
+    } 
+    // Fallback: usar Remote Playback API nativo del navegador (Chrome/Edge móvil)
+    else if (video.remote && video.remote.prompt) {
+      video.remote.prompt().catch(() => console.log('Remote playback prompt cancelled.'));
+    } else {
+      console.warn('Google Cast framework is not available.');
+    }
+  };
+
+  // --- Subtítulos (Acceso rápido al menú) ---
+  subtitlesBtn.onclick = (e) => {
+    e.stopPropagation();
+    // Simula un clic en el botón de configuración para abrir el menú
+    if (configBtn) configBtn.click();
+    // NOTA: Si prefieres que alterne subtítulos on/off directamente, puedes
+    // leer el estado de video.textTracks y cambiar e.mode = 'showing' / 'hidden'.
+  };
+
   // --- Fullscreen ---
   fsBtn.onclick = (e) => {
     e.stopPropagation();
@@ -263,7 +310,7 @@ export function bindControls(video, wrapper, controls, ICONS, state, loadVideoSo
   // --- Progress bar thumbnails ---
   bindProgressPreview(video, progressWrap, progressTooltip, progressPreviewContainer, thumbBox);
 
-  return { progressWrap, progressFill, progressBuffer, progressThumb, timeDisplay, volRange, playBtn, muteBtn, fsBtn, pipBtn, backBtn, fwdBtn };
+  return { progressWrap, progressFill, progressBuffer, progressThumb, timeDisplay, volRange, playBtn, muteBtn, fsBtn, pipBtn, backBtn, fwdBtn, castBtn, aspectBtn, subtitlesBtn };
 }
 
 /**
