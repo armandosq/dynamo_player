@@ -537,4 +537,71 @@ function initThumbnailPreview(video, refs) {
 }
 
 /**
- * Ambient light effect that samples video
+ * Ambient light effect that samples video colors
+ */
+export function buildAmbientMode(video, wrapper, thumbUrl) {
+  if (video.getAttribute('ambientMode') !== 'true') return;
+
+  const canvas = document.createElement('canvas');
+  canvas.className = 'dynamo-ambient-canvas';
+  canvas.width = 32;
+  canvas.height = 18;
+  wrapper.prepend(canvas);
+
+  const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
+  let rafId = null;
+
+  const drawFrame = (source) => {
+    try {
+      ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
+      wrapper.classList.add('ambient-active');
+    } catch (e) {
+      // CORS block - silent fail
+    }
+  };
+
+  const animate = () => {
+    if (video.paused || video.ended) return;
+    drawFrame(video);
+    rafId = requestAnimationFrame(animate);
+  };
+
+  // Initial frame from poster or video
+  if (thumbUrl) {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => drawFrame(img);
+    img.src = thumbUrl;
+  } else {
+    video.addEventListener('loadeddata', () => {
+      requestAnimationFrame(() => drawFrame(video));
+    }, { once: true });
+  }
+
+  video.addEventListener('play', () => {
+    wrapper.classList.add('ambient-active');
+    animate();
+  });
+
+  video.addEventListener('pause', () => {
+    if (rafId) cancelAnimationFrame(rafId);
+  });
+
+  video.addEventListener('ended', () => {
+    if (rafId) cancelAnimationFrame(rafId);
+  });
+
+  // Cleanup on video removal
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((m) => {
+      m.removedNodes.forEach((node) => {
+        if (node === video || node.contains?.(video)) {
+          if (rafId) cancelAnimationFrame(rafId);
+          observer.disconnect();
+        }
+      });
+    });
+  });
+
+  observer.observe(wrapper.parentNode || document.body, { childList: true, subtree: true });
+}
